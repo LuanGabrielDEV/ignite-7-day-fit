@@ -1,8 +1,8 @@
 import { MessageCircle, Instagram, Mail } from "lucide-react";
 
 const contacts = [
-  { icon: MessageCircle, label: "WhatsApp", value: "(81) 99999-9999", href: "https://wa.me/5581999999999" },
-  { icon: Instagram, label: "Instagram", value: "@alysonrafaelpersonal", href: "https://instagram.com/alysonrafaelpersonal" },
+  { icon: MessageCircle, label: "WhatsApp", value: "(81) 99987-0434", href: "https://wa.me/5581999870434" },
+  { icon: Instagram, label: "Instagram", value: "@alysonrafaelpersonal", href: "https://www.instagram.com/alysonnmonteiropersonal/" },
   { icon: Mail, label: "Email", value: "contato@alysonrafael.com", href: "mailto:contato@alysonrafael.com" },
 ];
 

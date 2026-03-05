@@ -14,7 +14,7 @@ const AboutSection = () => (
         Como funciona o <span className="gold-text">desafio de 7 dias</span>
       </h2>
       <p className="text-muted-foreground font-body text-center max-w-2xl mx-auto mb-14 text-lg leading-relaxed">
-        Durante 7 dias você terá acesso a um programa estruturado de treinos para ativar seu corpo, 
+        Durante 7 dias você terá acesso a um programa estruturado de treinos para ativar seu corpo,
         melhorar sua disposição e iniciar um processo real de emagrecimento.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">

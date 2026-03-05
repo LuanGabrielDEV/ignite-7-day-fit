@@ -14,17 +14,33 @@ const Pagamento = () => {
     cpf: "",
   });
 
+  const numeroWhatsapp = "5581999870434"; // Seu número com DDD e país
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const numeroWhatsapp = "5581999870434"; // Seu número com DDD e país
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nome || !formData.email || !formData.telefone || !formData.cpf) {
       toast.error("Preencha todos os campos!");
       return;
     }
-    toast.success("Pagamento simulado com sucesso! Em breve você receberá as instruções por email.");
+
+    // Monta mensagem para WhatsApp
+    const mensagem = `Olá! Quero participar do programa 7 Dias.\n\nNome: ${formData.nome}\nEmail: ${formData.email}\nTelefone: ${formData.telefone}\nCPF: ${formData.cpf}\nForma de pagamento: ${paymentMethod === "cartao" ? "Cartão de crédito" : "Pix"}`;
+    const url = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensagem)}`;
+
+    // Envia e-mail (backend deve estar rodando)
+    await fetch("http://localhost:3001/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formData, paymentMethod }),
+    });
+
+    toast.success("Inscrição enviada! Você será redirecionado para o WhatsApp.");
+    window.open(url, "_blank");
   };
 
   return (
@@ -43,101 +59,71 @@ const Pagamento = () => {
           <span className="gold-text">Desafio de 7 Dias</span>
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Product Summary */}
-          <div className="lg:col-span-2">
-            <div className="bg-card border border-border rounded-xl p-8 sticky top-10">
-              <h2 className="font-display text-xl font-semibold mb-6 gold-text">Resumo do pedido</h2>
-              <div className="space-y-4 font-body text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Produto</span>
-                  <span className="text-foreground font-medium">Desafio de Emagrecimento – 7 Dias</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Instrutor</span>
-                  <span className="text-foreground">Alyson Rafael</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Categoria</span>
-                  <span className="text-foreground">Mentoria Fitness</span>
-                </div>
-                <div className="border-t border-border pt-4 mt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total</span>
-                    <span className="font-display text-3xl font-bold gold-text">R$ 97,00</span>
-                  </div>
-                </div>
+        <div className="flex justify-center">
+          <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-8 space-y-6 max-w-lg w-full">
+            <h2 className="font-display text-xl font-semibold mb-2">Dados pessoais</h2>
+
+            {[
+              { name: "nome", label: "Nome completo", type: "text", placeholder: "Seu nome completo" },
+              { name: "email", label: "Email", type: "email", placeholder: "seu@email.com" },
+              { name: "telefone", label: "Telefone", type: "tel", placeholder: "(00) 00000-0000" },
+              { name: "cpf", label: "CPF", type: "text", placeholder: "000.000.000-00" },
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="block font-body text-sm text-muted-foreground mb-2">{field.label}</label>
+                <input
+                  name={field.name}
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={formData[field.name as keyof typeof formData]}
+                  onChange={handleChange}
+                  className="w-full bg-background border border-border rounded-lg px-4 py-3 font-body text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
+              </div>
+            ))}
+
+            <div>
+              <label className="block font-body text-sm text-muted-foreground mb-3">Forma de pagamento</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("cartao")}
+                  className={`flex items-center justify-center gap-2 rounded-lg border py-3 px-4 font-body text-sm transition-all cursor-pointer ${
+                    paymentMethod === "cartao"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Cartão de crédito
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("pix")}
+                  className={`flex items-center justify-center gap-2 rounded-lg border py-3 px-4 font-body text-sm transition-all cursor-pointer ${
+                    paymentMethod === "pix"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                  Pix
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* Payment Form */}
-          <div className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-8 space-y-6">
-              <h2 className="font-display text-xl font-semibold mb-2">Dados pessoais</h2>
+            <button
+              type="submit"
+              className="w-full gold-gradient text-primary-foreground font-display text-lg tracking-wider py-4 rounded-lg hover:scale-[1.02] transition-transform duration-300 flex items-center justify-center gap-3 cursor-pointer"
+            >
+              <Flame className="w-5 h-5" />
+              FINALIZAR INSCRIÇÃO
+            </button>
 
-              {[
-                { name: "nome", label: "Nome completo", type: "text", placeholder: "Seu nome completo" },
-                { name: "email", label: "Email", type: "email", placeholder: "seu@email.com" },
-                { name: "telefone", label: "Telefone", type: "tel", placeholder: "(00) 00000-0000" },
-                { name: "cpf", label: "CPF", type: "text", placeholder: "000.000.000-00" },
-              ].map((field) => (
-                <div key={field.name}>
-                  <label className="block font-body text-sm text-muted-foreground mb-2">{field.label}</label>
-                  <input
-                    name={field.name}
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    value={formData[field.name as keyof typeof formData]}
-                    onChange={handleChange}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-3 font-body text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-              ))}
-
-              <div>
-                <label className="block font-body text-sm text-muted-foreground mb-3">Forma de pagamento</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("cartao")}
-                    className={`flex items-center justify-center gap-2 rounded-lg border py-3 px-4 font-body text-sm transition-all cursor-pointer ${
-                      paymentMethod === "cartao"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/30"
-                    }`}
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    Cartão de crédito
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("pix")}
-                    className={`flex items-center justify-center gap-2 rounded-lg border py-3 px-4 font-body text-sm transition-all cursor-pointer ${
-                      paymentMethod === "pix"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/30"
-                    }`}
-                  >
-                    <QrCode className="w-4 h-4" />
-                    Pix
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full gold-gradient text-primary-foreground font-display text-lg tracking-wider py-4 rounded-lg hover:scale-[1.02] transition-transform duration-300 flex items-center justify-center gap-3 cursor-pointer"
-              >
-                <Flame className="w-5 h-5" />
-                FINALIZAR PAGAMENTO
-              </button>
-
-              <p className="text-muted-foreground/60 text-xs font-body text-center">
-                Pagamento processado de forma segura. Estrutura preparada para integração com gateway de pagamento.
-              </p>
-            </form>
-          </div>
+            <p className="text-muted-foreground/60 text-xs font-body text-center">
+              Seus dados serão enviados para nosso atendimento via WhatsApp.
+            </p>
+          </form>
         </div>
       </div>
       <Footer />
