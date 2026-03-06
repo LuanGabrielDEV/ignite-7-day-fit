@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 
 const Pagamento = () => {
   const navigate = useNavigate();
+
   const [paymentMethod, setPaymentMethod] = useState<"cartao" | "pix">("cartao");
+
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -14,33 +16,63 @@ const Pagamento = () => {
     cpf: "",
   });
 
-  const numeroWhatsapp = "5581999870434"; // Seu número com DDD e país
+  const numeroWhatsapp = "5581999870434";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const numeroWhatsapp = "5581999870434"; // Seu número com DDD e país
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nome || !formData.email || !formData.telefone || !formData.cpf) {
+
+    if (
+      !formData.nome ||
+      !formData.email ||
+      !formData.telefone ||
+      !formData.cpf
+    ) {
       toast.error("Preencha todos os campos!");
       return;
     }
 
-    // Monta mensagem para WhatsApp
-    const mensagem = `Olá! Quero participar do programa 7 Dias.\n\nNome: ${formData.nome}\nEmail: ${formData.email}\nTelefone: ${formData.telefone}\nCPF: ${formData.cpf}\nForma de pagamento: ${paymentMethod === "cartao" ? "Cartão de crédito" : "Pix"}`;
-    const url = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensagem)}`;
+    const mensagem = `
+Olá! Quero participar do programa 7 Dias.
 
-    // Envia e-mail (backend deve estar rodando)
-    await fetch("http://localhost:3001/api/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...formData, paymentMethod }),
-    });
+Nome: ${formData.nome}
+Email: ${formData.email}
+Telefone: ${formData.telefone}
+CPF: ${formData.cpf}
+Forma de pagamento: ${
+      paymentMethod === "cartao" ? "Cartão de crédito" : "Pix"
+    }
+`;
 
-    toast.success("Inscrição enviada! Você será redirecionado para o WhatsApp.");
-    window.open(url, "_blank");
+    const url = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(
+      mensagem
+    )}`;
+
+    try {
+      await fetch("http://localhost:3001/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          paymentMethod,
+        }),
+      });
+    } catch (error) {
+      console.log("Erro ao enviar email:", error);
+    }
+
+    toast.success("Redirecionando para o WhatsApp...");
+
+    // Redireciona para WhatsApp
+    window.location.href = url;
   };
 
   return (
@@ -60,17 +92,45 @@ const Pagamento = () => {
         </h1>
 
         <div className="flex justify-center">
-          <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-8 space-y-6 max-w-lg w-full">
-            <h2 className="font-display text-xl font-semibold mb-2">Dados pessoais</h2>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-card border border-border rounded-xl p-8 space-y-6 max-w-lg w-full"
+          >
+            <h2 className="font-display text-xl font-semibold mb-2">
+              Dados pessoais
+            </h2>
 
             {[
-              { name: "nome", label: "Nome completo", type: "text", placeholder: "Seu nome completo" },
-              { name: "email", label: "Email", type: "email", placeholder: "seu@email.com" },
-              { name: "telefone", label: "Telefone", type: "tel", placeholder: "(00) 00000-0000" },
-              { name: "cpf", label: "CPF", type: "text", placeholder: "000.000.000-00" },
+              {
+                name: "nome",
+                label: "Nome completo",
+                type: "text",
+                placeholder: "Seu nome completo",
+              },
+              {
+                name: "email",
+                label: "Email",
+                type: "email",
+                placeholder: "seu@email.com",
+              },
+              {
+                name: "telefone",
+                label: "Telefone",
+                type: "tel",
+                placeholder: "(00) 00000-0000",
+              },
+              {
+                name: "cpf",
+                label: "CPF",
+                type: "text",
+                placeholder: "000.000.000-00",
+              },
             ].map((field) => (
               <div key={field.name}>
-                <label className="block font-body text-sm text-muted-foreground mb-2">{field.label}</label>
+                <label className="block font-body text-sm text-muted-foreground mb-2">
+                  {field.label}
+                </label>
+
                 <input
                   name={field.name}
                   type={field.type}
@@ -83,7 +143,10 @@ const Pagamento = () => {
             ))}
 
             <div>
-              <label className="block font-body text-sm text-muted-foreground mb-3">Forma de pagamento</label>
+              <label className="block font-body text-sm text-muted-foreground mb-3">
+                Forma de pagamento
+              </label>
+
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -97,6 +160,7 @@ const Pagamento = () => {
                   <CreditCard className="w-4 h-4" />
                   Cartão de crédito
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("pix")}
@@ -126,6 +190,7 @@ const Pagamento = () => {
           </form>
         </div>
       </div>
+
       <Footer />
     </main>
   );
